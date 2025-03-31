@@ -1,11 +1,12 @@
 # v-server-setup
-Project nr. 1. during my time at Developer Akademie
+
+This is a documentation of setting up ssh login using SSH-Key Pairs, configure Nginx web server to access an alternative Web Page and configure Git on V-Server.
 
 # Table of Contents
 
-1. [Introduction](#introduction)  
-2. [Starting Requirements](#starting-requirements)  
-3. [Main Objective of this Project](#main-objective-of-this-project)  
+1. [Introduction](#introduction)
+2. [Starting Requirements](#starting-requirements)
+3. [Main Objective of this Project](#main-objective-of-this-project)
 
 ## Steps:
 
@@ -48,7 +49,7 @@ Following the checklist created for the project, the main objectives are:
 ## Step 1: Testing the given login credentials
 First of all I tried to establish a secure connection to the V server using the provided credentials. In order to do this I used following command in the VS Code terminal:
 
-    ssh username@server_ipaddress 
+    ssh username@server_ipaddress
 
 The command was successful, but since it was my first time connecting to this server, the output informed me that the server was not a known host and prompted me to accept(or not) the new fingerprint.
 After answering yes, I entered my password and I was successfully connected to the server.
@@ -58,7 +59,7 @@ For future ssh key login instead of password, I created a ssh key pair on my com
 
     ssh-keygen -t ed25519 -C "DevAkad_Project"
 
-`-t` specifies the encryption cipher  
+`-t` specifies the encryption cipher
 `-C` adds a comment at the end of the key (useful to keep track of the key purpose, for ex. for this project)
 
 The terminal then asked me where and in which file i wanted to save the new key pair. I left it blank to let it save it to the default location `~/.ssh/`
@@ -87,7 +88,7 @@ The key seemed successuflly copied. To double check I logged into the server usi
 
     ssh -i ~/.ssh/private_key username@server_ipaddress
 
-`-i` specifies the identity 
+`-i` specifies the identity
 
 Since I setted a passphrase for my SSH keys, i was asked for it. After entering the passphrase, I was then successufully connected to the server without needing to enter the server credentials (If I had let the key passphrase blank, the connection would have been right away)
 
@@ -97,7 +98,7 @@ To ensure that only my intended SSH key was copied, I listed the content of the 
 
 `-al` are two short modifiers for `--all`, for including hidden files, and `--long` for returning a detailed list.
 
-After confirming the presence of the `.ssh` folder, I listed its contents and found two directories and a file named `authorized_keys`  
+After confirming the presence of the `.ssh` folder, I listed its contents and found two directories and a file named `authorized_keys`
 
 Using the `cat` program I then printed this file's content in the terminal:
 
@@ -116,11 +117,11 @@ Once the file was open, I searched for the line that states `#PasswordAuthentica
 
     sudo systemctl restart ssh.service
 
-### Time for a Double Check! 
+### Time for a Double Check!
 I logged off from the server and tried to connect again, excluding the SSH key authentication and therefore forcing for another authentication method:
 
     ssh -o PubkeyAuthentication=no username@server_ipaddress
-`-o` passes a specific configuration option. In this case telling SSH to not use public key authentication. 
+`-o` passes a specific configuration option. In this case telling SSH to not use public key authentication.
 
 The output for this was:
 
@@ -142,13 +143,13 @@ Once the installation was complete, I checked if nginx was running with:
     systemctl status nginx.service
 
 The output showed a lot of informations, such as Process, Tasks, Memory, etc., witt the status highlighted as:
-`Active: active (running)` followed by the date and time, confirming that nginx was successful installed and running.  
+`Active: active (running)` followed by the date and time, confirming that nginx was successful installed and running.
 
-Entering then the IP address of the server in a browser, showed me the welcome page of nginx with the message: 
+Entering then the IP address of the server in a browser, showed me the welcome page of nginx with the message:
 
-> **Welcome to nginx!**  
-> If you see this page, the nginx web server is successfully installed and  
-> working. Further configuration is required.  
+> **Welcome to nginx!**
+> If you see this page, the nginx web server is successfully installed and
+> working. Further configuration is required.
 
 ## Step 6: Creating an alternative configuration and an alternate Index Page for Nginx
 
@@ -176,18 +177,18 @@ Nano opened and I wrote following configuration (taken from the study material) 
 
         location / {
             try_files $uri $uri/ =404;
-        }   
+        }
     }
 
 With the first block the listening port is changed from the default port 80 to port 8081:
-- first line refers to IPv4  
+- first line refers to IPv4
 - second line refers to IPv6
 
-The `root` line specifies the directory where the important site files are stored. 
+The `root` line specifies the directory where the important site files are stored.
 
-The `index` line specifies the new entry point of nginx, which is the alternative index we created. 
+The `index` line specifies the new entry point of nginx, which is the alternative index we created.
 
-The last block, `location`, handles user requests to the server. If the requests aren't the root page, nginx will search for a corrisponding element. If the user's requests can"t be satisfied, a 404 message is gonna be displayed. 
+The last block, `location`, handles user requests to the server. If the requests aren't the root page, nginx will search for a corrisponding element. If the user's requests can"t be satisfied, a 404 message is gonna be displayed.
 
 ### Step 6.2: Writing the alternate-index.html
 Time to modify the `alternate-index.html` file created earlier:
@@ -221,7 +222,7 @@ The output looked promising:
     nginx: the configuration file /etc/nginx/nginx.conf syntax is okay
     nginx: configuration file /etc/nginx/nginx.conf test is successful
 
-However I couldnt quite understand how my configuration file was tested, since the output displayed only the main `/nginx.conf`. 
+However I couldnt quite understand how my configuration file was tested, since the output displayed only the main `/nginx.conf`.
 After some  web searching, I then learned that `nginx.conf` usually contains references to other configurations files, like the ones stored in the directory `/sites-enabled/`.
 This meaning that even though the output only mentioned the main config file, the test included the alternatives too!
 
@@ -231,7 +232,7 @@ Since the test was passed I restarted Nginx services:
 
 and checked again with `systemctl status nginx.service` displaying an `active (running)` status!
 
-Afterward, I opened a browser and entered the server IP Address specifying the port 8081 like this: `http://server_ipaddress:8081`.  
+Afterward, I opened a browser and entered the server IP Address specifying the port 8081 like this: `http://server_ipaddress:8081`.
 
 This displayed the `alternate-index.html` as expected.
 Furthermore I added to that a non existent page to the url like `http://server_ipaddress:8081/im-not-here` and a 404 Not Found page was successfully displayed.
@@ -242,7 +243,7 @@ First I checked if git was already installed:
 
     git --version
 
-The output confirmed it by showing `git version 2.34.1`.  
+The output confirmed it by showing `git version 2.34.1`.
 Next, I set the my identity for git on the v-server through following commands:
 
     git config --global user.name "my github username"
@@ -296,7 +297,7 @@ I saved and closed nano and then ran this command to test if the configuration f
 
     ssh server_ip_address
 
-I got asked for the key passphrase, entered it and I was successfully connected to the server! 
+I got asked for the key passphrase, entered it and I was successfully connected to the server!
 However entering the key passphrase every time I connected to the server, started getting slightly annoying, so I searched for a solution.
 
 ### Setting up the ssh agent
@@ -313,11 +314,11 @@ After running the `ssh-add ~/path/to/private/key` I was prompted for the passphr
 
 For double checking if I did everything right, I also ran following command to check the list of saved identities:
 
-    ssh-add -l 
+    ssh-add -l
 
 The corrisponding public key to the private key I added was shown.
 
-For what I understood, the first line set the necessary variables in the shell that let the `ssh-agent` work properly. 
+For what I understood, the first line set the necessary variables in the shell that let the `ssh-agent` work properly.
 The second line let the `ssh-add` programm connect with the `ssh-agent` and load the key we indicated.
 
 Afterwards, I tried connecting to the server again and there was no need to input my ssh key passphrase, it connected right away!
